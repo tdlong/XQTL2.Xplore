@@ -14,14 +14,16 @@ XQTL2.Xplore provides comprehensive tools for:
 ## 🚀 Quick Installation
 
 ```r
-# Install from GitHub
-devtools::install_github("your-username/XQTL2.Xplore")
+# Install from GitHub with vignettes (important for RStudio users!)
+devtools::install_github("tdlong/XQTL2.Xplore", build_vignettes = TRUE)
 
 # Load and test
 library(XQTL2.Xplore)
 data(zinc_hanson_pseudoscan)
 XQTL_Manhattan_5panel(zinc_hanson_pseudoscan, cM = FALSE)
 ```
+
+**Note:** The `build_vignettes = TRUE` parameter is crucial for accessing the included tutorials in RStudio.
 
 ## 📚 Documentation
 
@@ -84,5 +86,5 @@ If you use this package in your research, please cite:
 XQTL2.Xplore: An R package for XQTL analysis and visualization
 Author: Tony Long
 Version: 0.0.0.9000
-URL: https://github.com/your-username/XQTL2.Xplore
+URL: https://github.com/tdlong/XQTL2.Xplore
 ``` 

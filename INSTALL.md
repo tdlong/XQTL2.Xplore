@@ -16,15 +16,17 @@ BiocManager::install("vcfR")
 
 ## Installation from GitHub
 
-### Method 1: Using devtools (Recommended)
+### Method 1: Using devtools (Recommended for RStudio)
 
 ```r
-# Install from GitHub
-devtools::install_github("your-username/XQTL2.Xplore")
+# Install from GitHub with vignettes (important for RStudio users!)
+devtools::install_github("tdlong/XQTL2.Xplore", build_vignettes = TRUE)
 
 # Load the package
 library(XQTL2.Xplore)
 ```
+
+**Note:** The `build_vignettes = TRUE` parameter is crucial for RStudio users to access the included tutorials.
 
 ### Method 2: Using remotes
 
@@ -33,8 +35,8 @@ library(XQTL2.Xplore)
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
 
-# Install from GitHub
-remotes::install_github("your-username/XQTL2.Xplore")
+# Install from GitHub with vignettes
+remotes::install_github("tdlong/XQTL2.Xplore", build_vignettes = TRUE)
 
 # Load the package
 library(XQTL2.Xplore)
@@ -44,7 +46,7 @@ library(XQTL2.Xplore)
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/XQTL2.Xplore.git
+   git clone https://github.com/tdlong/XQTL2.Xplore.git
    cd XQTL2.Xplore
    ```
 
@@ -53,8 +55,8 @@ library(XQTL2.Xplore)
    # Set working directory to the package folder
    setwd("path/to/XQTL2.Xplore")
    
-   # Install the package
-   devtools::install()
+   # Install the package with vignettes
+   devtools::install(build_vignettes = TRUE)
    
    # Load the package
    library(XQTL2.Xplore)
@@ -114,8 +116,8 @@ vignette("XQTL2_usage", package = "XQTL2.Xplore")
 
 4. **Vignettes not loading**
    ```r
-   # Reinstall with vignettes
-   devtools::install_github("your-username/XQTL2.Xplore", build_vignettes = TRUE)
+   # Reinstall with vignettes (this is the key fix!)
+   devtools::install_github("tdlong/XQTL2.Xplore", build_vignettes = TRUE)
    ```
 
 ### System Requirements
@@ -150,5 +152,5 @@ If you use this package in your research, please cite:
 XQTL2.Xplore: An R package for XQTL analysis and visualization
 Author: Tony Long
 Version: 0.0.0.9000
-URL: https://github.com/your-username/XQTL2.Xplore
+URL: https://github.com/tdlong/XQTL2.Xplore
 ``` 
