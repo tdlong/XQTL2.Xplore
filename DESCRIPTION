@@ -1,0 +1,36 @@
+Package: XQTL2.Xplore
+Title: Visualization Tools for XQTL Analysis
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "Anthony",
+           family = "Long",
+           role = c("aut", "cre"),
+           email = "tdlong@ucdavis.edu")
+Description: A package for visualizing XQTL analysis results, including gene annotations and variant data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    ggplot2,
+    dplyr,
+    tidyr,
+    rtracklayer,
+    vcfR,
+    readr,
+    bit,
+    bit64,
+    progress,
+    hms,
+    vroom,
+    tzdb,
+    patchwork
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr 
+Depends: 
+    R (>= 3.5)
+LazyData: true
