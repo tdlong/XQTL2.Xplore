@@ -326,6 +326,12 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
         mutate(Dfreq = freq_Z - freq_C) %>%
         mutate(s = Dfreq/(freq_C*(1-freq_C)*2))
 
+    # For selection coefficient plots, set s to NA for positions with low control frequencies
+    if (plotSelection) {
+        wide_df <- wide_df %>%
+            mutate(s = ifelse(freq_C < 0.025 | freq_C > 0.975, NA, s))
+    }
+
     # Calculate average Dfreq over REP and average freq_C
     avg_df <- wide_df %>%
         group_by(chr, pos, founder) %>%
