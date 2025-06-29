@@ -1,0 +1,41 @@
+# R package specific
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+*.Rproj.user/
+
+# Package installation artifacts
+Meta/
+*.Rcheck/
+*.tar.gz
+*.tgz
+*.zip
+
+# Documentation
+doc/
+*.pdf
+*.html
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# R package build artifacts
+*.o
+*.so
+*.dll
+*.dylib
+
+# Test coverage
+coverage/
+*.cov
+
+# RStudio
+.Rprofile
+.Renviron 
