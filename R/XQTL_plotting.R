@@ -297,25 +297,42 @@ XQTL_region <- function(df, chr, start, stop, y_var) {
   return(p)
 }
 
-#' XQTL Change Average Plot
+#' Plot average frequency changes or selection coefficients by position
 #' 
-#' Creates a line plot showing average frequency changes or selection coefficients across a genomic region.
-#' This function processes frequency data from experimental evolution studies, calculating the difference
-#' between treatment (Z) and control (C) frequencies, and optionally computes selection coefficients.
+#' Creates a line plot showing either frequency changes (Δq) or selection coefficients (s) across a genomic region.
+#' This function visualizes how allele frequencies change between treatment and control conditions, or the
+#' corresponding selection coefficients, for each founder strain across a specified genomic interval.
 #' 
-#' @param df A data frame containing QTL frequency data with columns: chr, pos, founder, TRT, freq, REP
+#' @param df Data frame containing frequency data with columns: chr, pos, founder, TRT, freq, REP
 #' @param chr Character string specifying the chromosome to analyze (e.g., "chr2L")
 #' @param start Integer specifying the start position in base pairs
 #' @param stop Integer specifying the stop position in base pairs
 #' @param reference_strain Optional character string specifying a reference strain to highlight in grey
-#' @param filter_low_freq_founders Logical, whether to reduce opacity of founders with low average frequency (< 0.025)
-#' @param plotSelection Logical, if TRUE plots selection coefficients instead of frequency changes
-#' @return A ggplot object showing average frequency changes or selection coefficients by position
+#' @param filter_low_freq_founders Logical, whether to apply transparency to low-frequency founders
+#' @param plotSelection Logical, whether to plot selection coefficients (s) instead of frequency changes (Δq)
+#' @return A ggplot object showing frequency changes or selection coefficients by position
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_line scale_x_continuous labs theme_bw theme scale_color_manual element_blank element_text margin scale_alpha_identity
 #' @importFrom dplyr filter mutate group_by summarise ungroup left_join arrange
 #' @importFrom tidyr pivot_wider
 #' @importFrom grid unit
+#' 
+#' @details
+#' This function handles low-frequency founders differently depending on the plot type:
+#' 
+#' **For frequency change plots (plotSelection = FALSE):**
+#' - Founders with average frequency < 2.5% across the interval are plotted with reduced transparency (alpha = 0.2)
+#' - low-frequency founders often cannot change in frequency much, so we don't want to over-emphasize them
+#' 
+#' **For selection coefficient plots (plotSelection = TRUE):**
+#' - Founders with average frequency < 2.5% across the interval are completely excluded from the plot
+#' - Founders with any positions having frequency < 2.5% are plotted with reduced transparency (alpha = 0.1)
+#' - This filtering is necessary because the normalization by 2pq can produce very large, potentially meaningless
+#'   values of s when the minor allele frequency is small
+#' - Low-alpha lines are plotted in the background to maintain visual hierarchy
+#' 
+#' Selection coefficients are calculated as s = Δq/(2pq), where Δq is the frequency change and 2pq is the
+#' heterozygosity in the control condition (p=1-q). This normalization can amplify noise when p or q is very small.
 XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, filter_low_freq_founders = TRUE, plotSelection=FALSE) {
     # Subset the dataframe
     subset_df <- df %>% filter(chr == !!chr, pos >= start, pos <= stop)
