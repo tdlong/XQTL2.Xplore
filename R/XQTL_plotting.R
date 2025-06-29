@@ -347,6 +347,21 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
                   overall_avg_s = mean(avg_s, na.rm = TRUE),
                   .groups = "drop")
 
+    # For selection coefficient plots, filter out founders with low average frequencies
+    if (plotSelection) {
+        # Remove founders with overall average frequency < 2.5%
+        low_freq_founders <- founder_avg_freq_C %>%
+            filter(overall_avg_freq_C < 0.025) %>%
+            pull(founder)
+        
+        avg_df <- avg_df %>%
+            filter(!founder %in% low_freq_founders)
+        
+        # Recalculate founder averages after filtering
+        founder_avg_freq_C <- founder_avg_freq_C %>%
+            filter(!founder %in% low_freq_founders)
+    }
+
     # Join the overall average back to avg_df
     avg_df <- avg_df %>%
         left_join(founder_avg_freq_C, by = "founder") %>%
@@ -355,6 +370,18 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
         } else {
             1
         })
+
+    # For selection coefficient plots, also reduce alpha for founders with any low-frequency positions
+    if (plotSelection) {
+        # Find founders that have any positions with low frequency
+        founders_with_low_positions <- wide_df %>%
+            filter(freq_C < 0.025) %>%
+            pull(founder) %>%
+            unique()
+        
+        avg_df <- avg_df %>%
+            mutate(color_alpha = ifelse(founder %in% founders_with_low_positions, 0.5, 1))
+    }
 
     # Get the color palette
     color_palette <- get_palette(unique(avg_df$founder), reference_strain)
