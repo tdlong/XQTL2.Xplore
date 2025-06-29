@@ -313,7 +313,7 @@ XQTL_region <- function(df, chr, start, stop, y_var) {
 #' @return A ggplot object showing average frequency changes or selection coefficients by position
 #' @export
 #' @importFrom ggplot2 ggplot aes geom_line scale_x_continuous labs theme_bw theme scale_color_manual element_blank element_text margin scale_alpha_identity
-#' @importFrom dplyr filter mutate group_by summarise ungroup left_join
+#' @importFrom dplyr filter mutate group_by summarise ungroup left_join arrange
 #' @importFrom tidyr pivot_wider
 #' @importFrom grid unit
 XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, filter_low_freq_founders = TRUE, plotSelection=FALSE) {
@@ -347,6 +347,10 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
                   overall_avg_s = mean(avg_s, na.rm = TRUE),
                   .groups = "drop")
 
+    # Get the color palette BEFORE filtering (to maintain consistency)
+    all_founders <- unique(df$founder)
+    color_palette <- get_palette(all_founders, reference_strain)
+
     # For selection coefficient plots, filter out founders with low average frequencies
     if (plotSelection) {
         # Remove founders with overall average frequency < 2.5%
@@ -366,7 +370,7 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
     avg_df <- avg_df %>%
         left_join(founder_avg_freq_C, by = "founder") %>%
         mutate(color_alpha = if(filter_low_freq_founders) {
-            ifelse(overall_avg_freq_C < 0.025, 0.3, 1)
+            ifelse(overall_avg_freq_C < 0.025, 0.2, 1)
         } else {
             1
         })
@@ -380,11 +384,12 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
             unique()
         
         avg_df <- avg_df %>%
-            mutate(color_alpha = ifelse(founder %in% founders_with_low_positions, 0.5, 1))
+            mutate(color_alpha = ifelse(founder %in% founders_with_low_positions, 0.1, 1))
     }
 
-    # Get the color palette
-    color_palette <- get_palette(unique(avg_df$founder), reference_strain)
+    # Sort by alpha to plot low-alpha lines first (in background)
+    avg_df <- avg_df %>%
+        arrange(color_alpha, founder)
 
     # Convert start, stop, and positions to Mb
     start_mb <- start / 1e6
