@@ -407,6 +407,16 @@ XQTL_change_average <- function(df, chr, start, stop, reference_strain = NULL, f
     return(p)
 }
 
+#' Get color palette for founders
+#' 
+#' Creates a color palette for founder strains, with optional highlighting of a reference strain in grey.
+#' This function is used internally by plotting functions to ensure consistent color schemes across
+#' different visualizations.
+#' 
+#' @param founders Character vector of founder names
+#' @param reference_strain Optional character string specifying a reference strain to highlight in grey
+#' @return Named character vector with founder names as names and hex color codes as values
+#' @export
 get_palette <- function(founders, reference_strain = NULL) {
   base_palette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#D55E00", "#CC79A7", "#000000", "#990099")
   
