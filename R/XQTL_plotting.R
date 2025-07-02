@@ -122,55 +122,69 @@ XQTL_Manhattan <- function(df, cM = FALSE, color_scheme = "KU") {
 #' This function generates five individual Manhattan plots (one per chromosome) arranged vertically,
 #' making it easier to examine detailed patterns within each chromosome. Each panel shows the same
 #' association statistics but with independent scaling for better visualization of chromosome-specific features.
+#' If multiple_traits_column is provided, points are colored by this column using a standard 8-color palette and a legend is added.
 #' 
 #' @param df A data frame containing QTL scan results with columns: chr, pos, Wald_log10p, and optionally cM
 #' @param cM Logical, whether to use genetic distance (cM) instead of physical distance (Mb) for x-axis
+#' @param multiple_traits_column Optional. Character string specifying the column in df that represents different studies/traits. If provided, points will be colored by this column using a standard 8-color palette and a legend will be added.
 #' @return A ggplot object with five faceted Manhattan plots, one per chromosome
 #' @export
-#' @importFrom ggplot2 facet_wrap geom_text scale_y_continuous ggplot aes geom_point labs theme_bw theme element_blank element_text
+#' @importFrom ggplot2 facet_wrap geom_text scale_y_continuous ggplot aes geom_point labs theme_bw theme element_blank element_text scale_color_manual
 #' @importFrom dplyr group_by summarise mutate ungroup
 #' @importFrom rlang sym
 #' @importFrom grid unit
-XQTL_Manhattan_5panel <- function(df, cM = FALSE) {
-  # Define UC colors
-  uc_colors <- c("#003262", "#FDB515")
-
-  # Order chromosomes
+XQTL_Manhattan_5panel <- function(df, cM = FALSE, multiple_traits_column = NULL) {
   chr_order <- c("chrX", "chr2L", "chr2R", "chr3L", "chr3R")
   df$chr <- factor(df$chr, levels = chr_order)
-
   x_var <- if (cM) "cM" else "Mb"
   df$Mb <- df$pos / 1e6
-  
-  # Create label data and calculate y-axis limits
   label_data <- df %>% 
     group_by(chr) %>%
     summarise(
       x = max(!!sym(x_var)), 
       y = max(Wald_log10p),
-      y_max = max(10, ceiling(max(Wald_log10p)))  # Ensure y_max is at least 10
+      y_max = max(10, ceiling(max(Wald_log10p)))
     )
-  
-  p <- ggplot(df, aes(x = !!sym(x_var), y = Wald_log10p)) +
-    geom_point(color = uc_colors[1], size = 0.25) +
-    facet_wrap(~ chr, ncol = 1, scales = "free") +  # Changed to free scales for both x and y
-    geom_text(
-      data = label_data,
-      aes(x = Inf, y = Inf, label = chr),
-      hjust = 1.1, vjust = 1.1,
-      size = 3
-    ) +
-    labs(x = x_var, y = "-log10(p-value)") +
-    theme_bw() +
-    theme(
-      panel.spacing = unit(0.1, "lines"),
-      strip.background = element_blank(),
-      strip.text = element_blank()
-    )
-  
-  # Set y-axis limits for each facet
+  if (!is.null(multiple_traits_column) && multiple_traits_column %in% names(df)) {
+    df[[multiple_traits_column]] <- as.factor(df[[multiple_traits_column]])
+    p <- ggplot(df, aes(x = !!sym(x_var), y = Wald_log10p, color = !!sym(multiple_traits_column))) +
+      geom_point(size = 0.25) +
+      facet_wrap(~ chr, ncol = 1, scales = "free") +
+      geom_text(
+        data = label_data,
+        aes(x = Inf, y = Inf, label = chr),
+        inherit.aes = FALSE,
+        hjust = 1.1, vjust = 1.1,
+        size = 3
+      ) +
+      labs(x = x_var, y = "-log10(p-value)", color = multiple_traits_column) +
+      theme_bw() +
+      theme(
+        panel.spacing = unit(0.1, "lines"),
+        strip.background = element_blank(),
+        strip.text = element_blank(),
+        legend.position = "right"
+      )
+  } else {
+    p <- ggplot(df, aes(x = !!sym(x_var), y = Wald_log10p)) +
+      geom_point(color = "#003262", size = 0.25) +
+      facet_wrap(~ chr, ncol = 1, scales = "free") +
+      geom_text(
+        data = label_data,
+        aes(x = Inf, y = Inf, label = chr),
+        inherit.aes = FALSE,
+        hjust = 1.1, vjust = 1.1,
+        size = 3
+      ) +
+      labs(x = x_var, y = "-log10(p-value)") +
+      theme_bw() +
+      theme(
+        panel.spacing = unit(0.1, "lines"),
+        strip.background = element_blank(),
+        strip.text = element_blank()
+      )
+  }
   p <- p + scale_y_continuous(limits = function(y) c(0, max(10, ceiling(max(y)))))
-
   return(p)
 }
 
