@@ -123,6 +123,7 @@ XQTL_Manhattan <- function(df, cM = FALSE, color_scheme = "KU") {
 #' making it easier to examine detailed patterns within each chromosome. Each panel shows the same
 #' association statistics but with independent scaling for better visualization of chromosome-specific features.
 #' If multiple_traits_column is provided, points are colored by this column using a standard 8-color palette and a legend is added.
+#' The function uses tidyverse/dplyr idioms and tidy evaluation throughout.
 #' 
 #' @param df A data frame containing QTL scan results with columns: chr, pos, Wald_log10p, and optionally cM
 #' @param cM Logical, whether to use genetic distance (cM) instead of physical distance (Mb) for x-axis
@@ -130,24 +131,29 @@ XQTL_Manhattan <- function(df, cM = FALSE, color_scheme = "KU") {
 #' @return A ggplot object with five faceted Manhattan plots, one per chromosome
 #' @export
 #' @importFrom ggplot2 facet_wrap geom_text scale_y_continuous ggplot aes geom_point labs theme_bw theme element_blank element_text scale_color_manual
-#' @importFrom dplyr group_by summarise mutate ungroup
-#' @importFrom rlang sym
+#' @importFrom dplyr group_by summarise mutate ungroup pull
+#' @importFrom rlang .data
 #' @importFrom grid unit
 XQTL_Manhattan_5panel <- function(df, cM = FALSE, multiple_traits_column = NULL) {
+  colors <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#D55E00", "#CC79A7", "#000000", "#990099")
   chr_order <- c("chrX", "chr2L", "chr2R", "chr3L", "chr3R")
-  df$chr <- factor(df$chr, levels = chr_order)
+  df <- df %>% dplyr::mutate(chr = factor(chr, levels = chr_order), Mb = pos / 1e6)
   x_var <- if (cM) "cM" else "Mb"
-  df$Mb <- df$pos / 1e6
-  label_data <- df %>% 
-    group_by(chr) %>%
-    summarise(
-      x = max(!!sym(x_var)), 
+  label_data <- df %>%
+    dplyr::group_by(chr) %>%
+    dplyr::summarise(
+      x = max(.data[[x_var]]),
       y = max(Wald_log10p),
       y_max = max(10, ceiling(max(Wald_log10p)))
     )
+
   if (!is.null(multiple_traits_column) && multiple_traits_column %in% names(df)) {
-    df[[multiple_traits_column]] <- as.factor(df[[multiple_traits_column]])
-    p <- ggplot(df, aes(x = !!sym(x_var), y = Wald_log10p, color = !!sym(multiple_traits_column))) +
+    df <- df %>% dplyr::mutate(trait = as.factor(.data[[multiple_traits_column]]))
+    n_levels <- df %>% dplyr::pull(trait) %>% levels() %>% length()
+    if (n_levels > length(colors)) {
+      stop("Not enough colors in the palette for the number of trait levels.")
+    }
+    p <- ggplot(df, aes(x = .data[[x_var]], y = Wald_log10p, color = trait)) +
       geom_point(size = 0.25) +
       facet_wrap(~ chr, ncol = 1, scales = "free") +
       geom_text(
@@ -158,6 +164,7 @@ XQTL_Manhattan_5panel <- function(df, cM = FALSE, multiple_traits_column = NULL)
         size = 3
       ) +
       labs(x = x_var, y = "-log10(p-value)", color = multiple_traits_column) +
+      scale_color_manual(values = colors[seq_len(n_levels)]) +
       theme_bw() +
       theme(
         panel.spacing = unit(0.1, "lines"),
@@ -166,8 +173,8 @@ XQTL_Manhattan_5panel <- function(df, cM = FALSE, multiple_traits_column = NULL)
         legend.position = "right"
       )
   } else {
-    p <- ggplot(df, aes(x = !!sym(x_var), y = Wald_log10p)) +
-      geom_point(color = "#003262", size = 0.25) +
+    p <- ggplot(df, aes(x = .data[[x_var]], y = Wald_log10p)) +
+      geom_point(color = colors[1], size = 0.25) +
       facet_wrap(~ chr, ncol = 1, scales = "free") +
       geom_text(
         data = label_data,

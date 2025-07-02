@@ -22,4 +22,5 @@ This function generates five individual Manhattan plots (one per chromosome) arr
 making it easier to examine detailed patterns within each chromosome. Each panel shows the same
 association statistics but with independent scaling for better visualization of chromosome-specific features.
 If multiple_traits_column is provided, points are colored by this column using a standard 8-color palette and a legend is added.
+The function uses tidyverse/dplyr idioms and tidy evaluation throughout.
 }
